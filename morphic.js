@@ -10869,6 +10869,9 @@ HandMorph.prototype.processMouseMove = function (event) {
                 if (morph.reactToTemplateCopy) {
                     morph.reactToTemplateCopy();
                 }
+                if (this.morphToGrab.reactToTemplateCopied) {
+                    this.morphToGrab.reactToTemplateCopied();
+                }
                 this.grab(morph);
                 this.grabOrigin = this.morphToGrab.situation();
             }

@@ -20,12 +20,13 @@
 		<script type="text/javascript" src="cloud.js"></script>
 		<script type="text/javascript" src="sha512.js"></script>
 		<script type="text/javascript" src="FileSaver.min.js"></script>
+		<script type="text/javascript" src="mobile.js"></script>
 		<script type="text/javascript">
 			var world;
 			window.onload = function () {
 				world = new WorldMorph(document.getElementById('world'));
                 world.worldCanvas.focus();
-				new IDE_Morph().openIn(world);
+				new MobileIdeMorph().openIn(world);
         loop();
 			};
 			function loop() {

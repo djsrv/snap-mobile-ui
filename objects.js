@@ -5732,7 +5732,7 @@ StageMorph.prototype.step = function () {
         if (this.threads.wantsToPause) {
             ide = this.parentThatIsA(IDE_Morph);
             if (ide) {
-                ide.controlBar.pauseButton.refresh();
+                ide.refreshPauseButton();
             }
         }
     }
@@ -5762,7 +5762,7 @@ StageMorph.prototype.stepGenericConditions = function (stopAll) {
         this.enableCustomHatBlocks = false;
         ide = this.parentThatIsA(IDE_Morph);
         if (ide) {
-            ide.controlBar.stopButton.refresh();
+            ide.refreshStopButton();
         }
         return;
     }
@@ -5925,7 +5925,7 @@ StageMorph.prototype.fireGreenFlagEvent = function () {
         ));
     });
     if (ide) {
-        ide.controlBar.pauseButton.refresh();
+        ide.refreshPauseButton();
     }
     return procs;
 };
@@ -5945,7 +5945,7 @@ StageMorph.prototype.fireStopAllEvent = function () {
     if (ide) {
         ide.nextSteps([
             nop,
-            function () {ide.controlBar.pauseButton.refresh(); }
+            function () {ide.refreshPauseButton(); }
         ]);
     }
 };

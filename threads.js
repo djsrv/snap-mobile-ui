@@ -1716,7 +1716,7 @@ Process.prototype.doStopAll = function () {
             stage.removeAllClones();
         }
         ide = stage.parentThatIsA(IDE_Morph);
-        if (ide) {ide.controlBar.pauseButton.refresh(); }
+        if (ide) {ide.refreshPauseButton(); }
     }
 };
 
@@ -1840,7 +1840,7 @@ Process.prototype.doPauseAll = function () {
             stage.threads.pauseAll(stage);
         }
         ide = stage.parentThatIsA(IDE_Morph);
-        if (ide) {ide.controlBar.pauseButton.refresh(); }
+        if (ide) {ide.refreshPauseButton(); }
     }
 };
 

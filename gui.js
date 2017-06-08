@@ -254,6 +254,8 @@ IDE_Morph.prototype.init = function (isAutoFill) {
 
     this.savingPreferences = true; // for bh's infamous "Eisenbergification"
 
+    this.isMobile = false;
+
     // initialize inherited properties:
     IDE_Morph.uber.init.call(this);
 
@@ -936,6 +938,14 @@ IDE_Morph.prototype.createControlBar = function () {
     };
 };
 
+IDE_Morph.prototype.refreshStopButton = function () {
+    this.controlBar.stopButton.refresh();
+};
+
+IDE_Morph.prototype.refreshPauseButton = function () {
+    this.controlBar.pauseButton.refresh();
+};
+
 IDE_Morph.prototype.createCategories = function () {
     var myself = this;
 
@@ -1081,8 +1091,8 @@ IDE_Morph.prototype.createPalette = function (forSearching) {
         }
     };
 
-    this.palette.setWidth(this.logo.width());
-    this.add(this.palette);
+    this.palette.setWidth(this.logo ? this.logo.width() : 200);
+    if (!this.isMobile) {this.add(this.palette); }
     return this.palette;
 };
 
@@ -1107,7 +1117,7 @@ IDE_Morph.prototype.createStage = function () {
         );
         this.stage.add(this.currentSprite);
     }
-    this.add(this.stage);
+    if (!this.isMobile) {this.add(this.stage); }
 };
 
 IDE_Morph.prototype.createStageHandle = function () {
@@ -1343,6 +1353,10 @@ IDE_Morph.prototype.createSpriteBar = function () {
     };
 };
 
+IDE_Morph.prototype.tabTo = function (tabString) {
+    this.spriteBar.tabBar.tabTo(tabString);
+};
+
 IDE_Morph.prototype.createSpriteEditor = function () {
     // assumes that the logo pane and the stage have already been created
     var scripts = this.currentSprite.scripts,
@@ -1428,8 +1442,8 @@ IDE_Morph.prototype.createCorralBar = function () {
 
     this.corralBar = new Morph();
     this.corralBar.color = this.frameColor;
-    this.corralBar.setHeight(this.logo.height()); // height is fixed
-    this.add(this.corralBar);
+    this.corralBar.setHeight(this.controlBar.height()); // height is fixed
+    if (!this.isMobile) {this.add(this.corralBar); }
 
     // new sprite button
     newbutton = new PushButtonMorph(
@@ -1762,7 +1776,7 @@ IDE_Morph.prototype.droppedImage = function (aCanvas, name) {
 
     this.currentSprite.addCostume(costume);
     this.currentSprite.wearCostume(costume);
-    this.spriteBar.tabBar.tabTo('costumes');
+    this.tabTo('costumes');
     this.hasChangedMedia = true;
 };
 
@@ -1770,13 +1784,13 @@ IDE_Morph.prototype.droppedSVG = function (anImage, name) {
     var costume = new SVG_Costume(anImage, name.split('.')[0]);
     this.currentSprite.addCostume(costume);
     this.currentSprite.wearCostume(costume);
-    this.spriteBar.tabBar.tabTo('costumes');
+    this.tabTo('costumes');
     this.hasChangedMedia = true;
 };
 
 IDE_Morph.prototype.droppedAudio = function (anAudio, name) {
     this.currentSprite.addSound(anAudio, name.split('.')[0]); // up to period
-    this.spriteBar.tabBar.tabTo('sounds');
+    this.tabTo('sounds');
     this.hasChangedMedia = true;
 };
 
@@ -1846,7 +1860,7 @@ IDE_Morph.prototype.pressStart = function () {
         this.toggleFastTracking();
     } else {
         this.stage.threads.pauseCustomHatBlocks = false;
-        this.controlBar.stopButton.refresh();
+        this.refreshStopButton();
         this.runScripts();
     }
 };
@@ -1900,7 +1914,7 @@ IDE_Morph.prototype.togglePauseResume = function () {
     } else {
         this.stage.threads.pauseAll(this.stage);
     }
-    this.controlBar.pauseButton.refresh();
+    this.refreshPauseButton();
 };
 
 IDE_Morph.prototype.isPaused = function () {
@@ -1915,7 +1929,7 @@ IDE_Morph.prototype.stopAllScripts = function () {
     } else {
         this.stage.threads.pauseCustomHatBlocks = false;
     }
-    this.controlBar.stopButton.refresh();
+    this.refreshStopButton();
     this.stage.fireStopAllEvent();
 };
 
@@ -3916,7 +3930,7 @@ IDE_Morph.prototype.openProjectString = function (str) {
 
 IDE_Morph.prototype.rawOpenProjectString = function (str) {
     this.toggleAppMode(false);
-    this.spriteBar.tabBar.tabTo('scripts');
+    this.tabTo('scripts');
     StageMorph.prototype.hiddenPrimitives = {};
     StageMorph.prototype.codeMappings = {};
     StageMorph.prototype.codeHeaders = {};
@@ -4357,7 +4371,7 @@ IDE_Morph.prototype.toggleDynamicInputLabels = function () {
         projectData = this.serializer.serialize(this.stage);
     }
     SpriteMorph.prototype.initBlocks();
-    this.spriteBar.tabBar.tabTo('scripts');
+    this.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
     this.openProjectString(projectData);
@@ -4625,7 +4639,7 @@ IDE_Morph.prototype.reflectLanguage = function (lang, callback) {
         }
     }
     SpriteMorph.prototype.initBlocks();
-    this.spriteBar.tabBar.tabTo('scripts');
+    this.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
     this.fixLayout();
@@ -4738,7 +4752,7 @@ IDE_Morph.prototype.setBlocksScale = function (num) {
     SyntaxElementMorph.prototype.setScale(num);
     CommentMorph.prototype.refreshScale();
     SpriteMorph.prototype.initBlocks();
-    this.spriteBar.tabBar.tabTo('scripts');
+    this.tabTo('scripts');
     this.createCategories();
     this.createCorralBar();
     this.fixLayout();

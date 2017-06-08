@@ -3881,7 +3881,7 @@ BlockMorph.prototype.snap = function () {
                 stage.threads.pauseCustomHatBlocks = false;
                 ide = stage.parentThatIsA(IDE_Morph);
                 if (ide) {
-                    ide.controlBar.stopButton.refresh();
+                    ide.refreshStopButton();
                 }
             }
         }
@@ -13107,7 +13107,7 @@ ScriptFocusMorph.prototype.insertBlock = function (block) {
                 stage.threads.pauseCustomHatBlocks = false;
                 ide = stage.parentThatIsA(IDE_Morph);
                 if (ide) {
-                    ide.controlBar.stopButton.refresh();
+                    ide.refreshStopButton();
                 }
             }
         }
