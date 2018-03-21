@@ -8,10 +8,97 @@ MobileIdeMorph.uber = IDE_Morph.prototype;
 
 MobileIdeMorph.prototype.setDefaultDesign = function () {
     MobileIdeMorph.uber.setDefaultDesign.call(this);
-    IDE_Morph.prototype.padding = 2;
+    MobileIdeMorph.prototype.padding = 2;
 };
 
-// IDE_Morph instance creation:
+// MobileIdeMorph settings persistance
+
+MobileIdeMorph.prototype.applySavedSettings = function () {
+    var design = this.getSetting('design'),
+        zoom = this.getSetting('zoom') || 1.25,
+        language = this.getSetting('language'),
+        click = this.getSetting('click'),
+        longform = this.getSetting('longform'),
+        longurls = this.getSetting('longurls'),
+        plainprototype = this.getSetting('plainprototype'),
+        keyboard = this.getSetting('keyboard'),
+        tables = this.getSetting('tables'),
+        tableLines = this.getSetting('tableLines'),
+        autoWrapping = this.getSetting('autowrapping');
+
+    // design
+    if (design === 'flat') {
+        this.setFlatDesign();
+    } else {
+        this.setDefaultDesign();
+    }
+
+    // blocks zoom
+    if (zoom) {
+        SyntaxElementMorph.prototype.setScale(Math.min(zoom, 12));
+        CommentMorph.prototype.refreshScale();
+        SpriteMorph.prototype.initBlocks();
+    }
+
+    // language
+    if (language && language !== 'en') {
+        this.userLanguage = language;
+    } else {
+        this.userLanguage = null;
+    }
+
+    //  click
+    if (click && !BlockMorph.prototype.snapSound) {
+        BlockMorph.prototype.toggleSnapSound();
+    }
+
+    // long form
+    if (longform) {
+        InputSlotDialogMorph.prototype.isLaunchingExpanded = true;
+    }
+
+    // project data in URLs
+    if (longurls) {
+        this.projectsInURLs = true;
+    } else {
+        this.projectsInURLs = false;
+    }
+
+    // keyboard editing
+    if (keyboard === 'false') {
+        ScriptsMorph.prototype.enableKeyboard = false;
+    } else {
+        ScriptsMorph.prototype.enableKeyboard = true;
+    }
+
+    // tables
+    if (tables === 'false') {
+        List.prototype.enableTables = false;
+    } else {
+        List.prototype.enableTables = true;
+    }
+
+    // tableLines
+    if (tableLines) {
+        TableMorph.prototype.highContrast = true;
+    } else {
+        TableMorph.prototype.highContrast = false;
+    }
+
+    // nested auto-wrapping
+    if (autoWrapping === 'false') {
+        ScriptsMorph.prototype.enableNestedAutoWrapping = false;
+    } else {
+        ScriptsMorph.prototype.enableNestedAutoWrapping = true;
+    }
+
+    // plain prototype labels
+    if (plainprototype) {
+        BlockLabelPlaceHolderMorph.prototype.plainLabel = true;
+    }
+};
+
+// MobileIdeMorph instance creation:
 
 function MobileIdeMorph(isAutoFill) {
     this.init(isAutoFill);
@@ -19,9 +106,9 @@ function MobileIdeMorph(isAutoFill) {
 
 MobileIdeMorph.prototype.init = function (isAutoFill) {
     MobileIdeMorph.uber.init.call(this);
-    this.barHeight = 32;
-    this.tabBar = null;
     this.isMobile = true;
+    this.barHeight = 48;
+    this.tabBar = null;
     this.spritesPanel = null;
     this.stagePanel = null;
 };
@@ -94,7 +181,7 @@ MobileIdeMorph.prototype.createControlBar = function () {
     button.color = colors[0];
     button.highlightColor = colors[1];
     button.pressColor = colors[2];
-    button.labelMinExtent = new Point(36, 22);
+    button.labelMinExtent = new Point(48, 36);
     button.padding = 0;
     button.labelShadowOffset = new Point(-1, -1);
     button.labelShadowColor = colors[1];
@@ -118,7 +205,7 @@ MobileIdeMorph.prototype.createControlBar = function () {
     button.color = colors[0];
     button.highlightColor = colors[1];
     button.pressColor = colors[2];
-    button.labelMinExtent = new Point(36, 22);
+    button.labelMinExtent = new Point(48, 36);
     button.padding = 0;
     button.labelShadowOffset = new Point(-1, -1);
     button.labelShadowColor = colors[1];
@@ -182,7 +269,7 @@ MobileIdeMorph.prototype.createControlBar = function () {
 
 MobileIdeMorph.prototype.createTabBar = function () {
     var padding = 5,
-        button,
+        buttons,
         spritesButton,
         scriptsButton,
         costumesButton,
@@ -218,7 +305,7 @@ MobileIdeMorph.prototype.createTabBar = function () {
     };
 
     // spritesButton
-    button = new ToggleButtonMorph(
+    spritesButton = new ToggleButtonMorph(
         colors,
         this,
         function () {myself.tabBar.tabTo('sprites'); },
@@ -227,22 +314,10 @@ MobileIdeMorph.prototype.createTabBar = function () {
             return myself.currentTab === 'sprites';
         }
     );
-    button.corner = 12;
-    button.labelMinExtent = new Point(36, 22);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.drawNew();
-    button.fixLayout();
-    button.refresh();
-    spritesButton = button;
-    this.tabBar.add(spritesButton);
     this.tabBar.spritesButton = spritesButton; // for menu positioning
 
     // scriptsButton
-    button = new ToggleButtonMorph(
+    scriptsButton = new ToggleButtonMorph(
         colors,
         this,
         function () {myself.tabBar.tabTo('scripts'); },
@@ -251,23 +326,10 @@ MobileIdeMorph.prototype.createTabBar = function () {
             return myself.currentTab === 'scripts';
         }
     );
-    button.corner = 12;
-    button.labelMinExtent = new Point(36, 22);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.fontSize = 20;
-    button.drawNew();
-    button.fixLayout();
-    button.refresh();
-    scriptsButton = button;
-    this.tabBar.add(scriptsButton);
     this.tabBar.scriptsButton = scriptsButton; // for menu positioning
 
     // costumesButton
-    button = new ToggleButtonMorph(
+    costumesButton = new ToggleButtonMorph(
         colors,
         this,
         function () {myself.tabBar.tabTo('costumes'); },
@@ -276,23 +338,10 @@ MobileIdeMorph.prototype.createTabBar = function () {
             return myself.currentTab === 'costumes';
         }
     );
-    button.corner = 12;
-    button.labelMinExtent = new Point(36, 22);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.fontSize = 20;
-    button.drawNew();
-    button.fixLayout();
-    button.refresh();
-    costumesButton = button;
-    this.tabBar.add(costumesButton);
     this.tabBar.costumesButton = costumesButton; // for menu positioning
 
     // soundsButton
-    button = new ToggleButtonMorph(
+    soundsButton = new ToggleButtonMorph(
         colors,
         this,
         function () {myself.tabBar.tabTo('sounds'); },
@@ -301,23 +350,10 @@ MobileIdeMorph.prototype.createTabBar = function () {
             return myself.currentTab === 'sounds';
         }
     );
-    button.corner = 12;
-    button.labelMinExtent = new Point(36, 22);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.fontSize = 20;
-    button.drawNew();
-    button.fixLayout();
-    button.refresh();
-    soundsButton = button;
-    this.tabBar.add(soundsButton);
     this.tabBar.soundsButton = soundsButton; // for menu positioning
 
     // stageButton
-    button = new ToggleButtonMorph(
+    stageButton = new ToggleButtonMorph(
         colors,
         this,
         function () {myself.tabBar.tabTo('stage'); },
@@ -326,29 +362,33 @@ MobileIdeMorph.prototype.createTabBar = function () {
             return myself.currentTab === 'stage';
         }
     );
-    button.corner = 12;
-    button.labelMinExtent = new Point(36, 22);
-    button.padding = 0;
-    button.labelShadowOffset = new Point(-1, -1);
-    button.labelShadowColor = colors[1];
-    button.labelColor = this.buttonLabelColor;
-    button.contrast = this.buttonContrast;
-    button.drawNew();
-    button.fixLayout();
-    button.refresh();
-    stageButton = button;
-    this.tabBar.add(stageButton);
     this.tabBar.stageButton = stageButton; // for menu positioning
 
+    buttons = [
+        spritesButton,
+        scriptsButton,
+        costumesButton,
+        soundsButton,
+        stageButton
+    ];
+
+    buttons.forEach(function (button) {
+        button.corner = 12;
+        button.labelMinExtent = new Point(48, 36);
+        button.padding = 0;
+        button.labelShadowOffset = new Point(-1, -1);
+        button.labelShadowColor = colors[1];
+        button.labelColor = myself.buttonLabelColor;
+        button.contrast = myself.buttonContrast;
+        button.fontSize = 20;
+        button.drawNew();
+        button.fixLayout();
+        button.refresh();
+        myself.tabBar.add(button);
+    });
+
     this.tabBar.fixLayout = function () {
-        var buttons, width, x;
-        buttons = [
-            spritesButton,
-            scriptsButton,
-            costumesButton,
-            soundsButton,
-            stageButton
-        ];
+        var width, x;
         width = (buttons[0].width() + padding) * buttons.length - padding;
         x = myself.tabBar.center().x - width / 2;
         buttons.forEach(function (button) {
@@ -357,7 +397,6 @@ MobileIdeMorph.prototype.createTabBar = function () {
             x += button.width() + padding;
         });
     };
-
 };
 
 MobileIdeMorph.prototype.tabTo = function (tabString) {
@@ -466,7 +505,7 @@ MobileIdeMorph.prototype.createSpritesPanel = function () {
 
     this.spritesPanel = new Morph();
     this.spritesPanel.color = this.groupColor;
-     // panel is not added until needed but pretends to exist in world
+    // panel is not added until needed but pretends to exist in world
     this.spritesPanel.parent = this;
 
     this.spritesPanel.add(this.spriteBar);
@@ -1160,7 +1199,7 @@ MobileIdeMorph.prototype.moreSettingsMenu = function () {
 
 MobileIdeMorph.prototype.createCategories = function () {
     var myself = this,
-        size = 30;
+        size = 40;
 
     if (this.categories) {
         this.categories.destroy();
@@ -1247,7 +1286,7 @@ MobileIdeMorph.prototype.createPaletteDrawer = function () {
     };
 };
 
-IDE_Morph.prototype.createSpriteBar = function () {
+MobileIdeMorph.prototype.createSpriteBar = function () {
     // assumes that the categories pane has already been created
     var rotationStyleButtons = [],
         thumbSize = new Point(45, 45),
@@ -1385,7 +1424,7 @@ IDE_Morph.prototype.createSpriteBar = function () {
     }
 };
 
-IDE_Morph.prototype.createCorral = function (forSubMorph) {
+MobileIdeMorph.prototype.createCorral = function (forSubMorph) {
     // assumes the corral bar has already been created
     var frame, template, padding = 5, myself = this;
 
