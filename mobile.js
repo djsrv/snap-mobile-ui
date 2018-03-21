@@ -1266,6 +1266,7 @@ MobileIdeMorph.prototype.createPaletteDrawer = function () {
 
     this.paletteDrawer = new Morph();
     this.paletteDrawer.color = this.groupColor;
+    this.paletteDrawer.acceptsDrops = true;
     this.paletteDrawer.add(this.palette);
     this.paletteDrawer.add(this.categories);
 
@@ -1282,7 +1283,40 @@ MobileIdeMorph.prototype.createPaletteDrawer = function () {
     };
 
     this.paletteDrawer.setOpen = function (flag) {
-        this.setLeft(flag ? ide.left() : ide.left() - ide.palette.width());
+        var x = flag ? ide.left() : ide.left() - ide.palette.width();
+        if (this.isOpen === flag) {
+            this.setLeft(x);
+        } else {
+            this.glideTo(new Point(x, this.top()), 100);
+        }
+        this.isOpen = flag;
+    };
+
+    this.paletteDrawer.mouseClickLeft = function () {
+        this.setOpen(true);
+    };
+
+    this.paletteDrawer.reactToDropOf = function (droppedMorph, hand) {
+        if (droppedMorph instanceof DialogBoxMorph) {
+            myself.world().add(droppedMorph);
+        } else if (droppedMorph instanceof SpriteMorph) {
+            myself.removeSprite(droppedMorph);
+        } else if (droppedMorph instanceof SpriteIconMorph) {
+            droppedMorph.destroy();
+            myself.removeSprite(droppedMorph.object);
+        } else if (droppedMorph instanceof CostumeIconMorph) {
+            myself.currentSprite.wearCostume(null);
+            droppedMorph.perish();
+        } else if (droppedMorph instanceof BlockMorph) {
+            if (hand && hand.grabOrigin.origin instanceof ScriptsMorph) {
+                hand.grabOrigin.origin.clearDropInfo();
+                hand.grabOrigin.origin.lastDroppedBlock = droppedMorph;
+                hand.grabOrigin.origin.recordDrop(hand.grabOrigin);
+            }
+            droppedMorph.perish();
+        } else {
+            droppedMorph.perish();
+        }
     };
 };
 
