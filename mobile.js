@@ -1243,11 +1243,7 @@ MobileIdeMorph.prototype.createPaletteDrawer = function () {
     };
 
     this.paletteDrawer.setOpen = function (flag) {
-        var pos = new Point(
-            flag ? 0 : -ide.palette.width(),
-            this.top()
-        );
-        this.setPosition(pos);
+        this.setLeft(flag ? ide.left() : ide.left() - ide.palette.width());
     };
 };
 
