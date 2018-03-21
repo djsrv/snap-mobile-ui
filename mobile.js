@@ -22,6 +22,8 @@ MobileIdeMorph.prototype.init = function (isAutoFill) {
     this.barHeight = 32;
     this.tabBar = null;
     this.isMobile = true;
+    this.spritesPanel = null;
+    this.stagePanel = null;
 };
 
 // MobileIdeMorph construction
@@ -37,6 +39,8 @@ MobileIdeMorph.prototype.buildPanes = function () {
     this.createSpriteEditor();
     this.createCorralBar();
     this.createCorral();
+    this.createSpritesPanel();
+    this.createStagePanel();
 };
 
 MobileIdeMorph.prototype.createControlBar = function () {
@@ -370,30 +374,8 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
     }
 
     if (this.currentTab === 'sprites') {
-        this.spriteEditor = new Morph();
-        this.spriteEditor.color = this.groupColor;
-        this.add(this.spriteEditor);
-
-        this.spriteEditor.add(this.spriteBar);
-        this.spriteEditor.add(this.corralBar);
-        this.spriteEditor.add(this.corral);
-
-        this.spriteEditor.fixLayout = function (situation) {
-            ide.spriteBar.setTop(this.top());
-            ide.spriteBar.setWidth(this.width());
-            ide.spriteBar.setHeight(59);
-
-            ide.corralBar.setTop(ide.spriteBar.bottom() + 1);
-            ide.corralBar.setWidth(this.width());
-
-            ide.corral.setTop(ide.corralBar.bottom() + ide.padding);
-            ide.corral.setWidth(this.width());
-            ide.corral.setHeight(this.bottom() - ide.corral.top() - ide.padding);
-
-            if (situation !== 'selectSprite') {
-                ide.corral.fixLayout();
-            }
-        };
+        this.spriteEditor = this.spritesPanel;
+        this.addChild(this.spriteEditor);
     } else if (this.currentTab === 'scripts') {
         scripts.isDraggable = false;
         scripts.color = this.groupColor;
@@ -458,7 +440,8 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
         this.spriteEditor.acceptDrops = false;
         this.spriteEditor.contents.acceptsDrops = false;
     } else if (this.currentTab === 'stage') {
-        this.createStagePanel();
+        this.spriteEditor = this.stagePanel;
+        this.addChild(this.spriteEditor);
     } else {
         this.spriteEditor = new Morph();
         this.spriteEditor.color = this.groupColor;
@@ -474,6 +457,38 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
         };
         this.add(this.spriteEditor);
     }
+
+    this.spriteEditor.show();
+};
+
+MobileIdeMorph.prototype.createSpritesPanel = function () {
+    var ide = this;
+
+    this.spritesPanel = new Morph();
+    this.spritesPanel.color = this.groupColor;
+     // panel is not added until needed but pretends to exist in world
+    this.spritesPanel.parent = this;
+
+    this.spritesPanel.add(this.spriteBar);
+    this.spritesPanel.add(this.corralBar);
+    this.spritesPanel.add(this.corral);
+
+    this.spritesPanel.fixLayout = function (situation) {
+        ide.spriteBar.setTop(this.top());
+        ide.spriteBar.setWidth(this.width());
+        ide.spriteBar.setHeight(59);
+
+        ide.corralBar.setTop(ide.spriteBar.bottom() + 1);
+        ide.corralBar.setWidth(this.width());
+
+        ide.corral.setTop(ide.corralBar.bottom() + ide.padding);
+        ide.corral.setWidth(this.width());
+        ide.corral.setHeight(this.bottom() - ide.corral.top() - ide.padding);
+
+        if (situation !== 'selectSprite') {
+            ide.corral.fixLayout();
+        }
+    };
 };
 
 MobileIdeMorph.prototype.createStagePanel = function () {
@@ -490,9 +505,10 @@ MobileIdeMorph.prototype.createStagePanel = function () {
         ],
         myself = this;
 
-    this.spriteEditor = new Morph();
-    this.spriteEditor.color = this.groupColor;
-    this.add(this.spriteEditor);
+    this.stagePanel = new Morph();
+    this.stagePanel.color = this.groupColor;
+    // panel is not added until needed but pretends to exist in world
+    this.stagePanel.parent = this;
 
     // stopButton
     button = new ToggleButtonMorph(
@@ -526,8 +542,8 @@ MobileIdeMorph.prototype.createStagePanel = function () {
     button.fixLayout();
     button.refresh();
     stopButton = button;
-    this.spriteEditor.add(stopButton);
-    this.spriteEditor.stopButton = stopButton; // for refreshing
+    this.stagePanel.add(stopButton);
+    this.stagePanel.stopButton = stopButton; // for refreshing
 
     //pauseButton
     button = new ToggleButtonMorph(
@@ -558,10 +574,10 @@ MobileIdeMorph.prototype.createStagePanel = function () {
     button.fixLayout();
     button.refresh();
     pauseButton = button;
-    this.spriteEditor.add(pauseButton);
-    this.spriteEditor.pauseButton = pauseButton; // for refreshing
+    this.stagePanel.add(pauseButton);
+    this.stagePanel.pauseButton = pauseButton; // for refreshing
 
-    this.spriteEditor.refreshResumeSymbol = function () {
+    this.stagePanel.refreshResumeSymbol = function () {
         var pauseSymbols;
         if (Process.prototype.enableSingleStepping &&
                 Process.prototype.flashTime > 0.5) {
@@ -581,7 +597,7 @@ MobileIdeMorph.prototype.createStagePanel = function () {
         pauseButton.fixLayout();
         pauseButton.refresh();
     };
-    this.spriteEditor.refreshResumeSymbol();
+    this.stagePanel.refreshResumeSymbol();
 
     // startButton
     button = new PushButtonMorph(
@@ -603,12 +619,12 @@ MobileIdeMorph.prototype.createStagePanel = function () {
     // button.hint = 'start green\nflag scripts';
     button.fixLayout();
     startButton = button;
-    this.spriteEditor.add(startButton);
-    this.spriteEditor.startButton = startButton;
+    this.stagePanel.add(startButton);
+    this.stagePanel.startButton = startButton;
 
-    this.spriteEditor.add(this.stage);
+    this.stagePanel.add(this.stage);
 
-    this.spriteEditor.fixLayout = function () {
+    this.stagePanel.fixLayout = function () {
         myself.stage.setScale(myself.stageRatio);
         myself.stage.setCenter(this.center());
         x = this.right() - padding;
