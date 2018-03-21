@@ -451,7 +451,10 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
             ide.paletteDrawer.setHeight(this.height());
             ide.paletteDrawer.fixLayout();
 
-            this.scrollFrame.setPosition(ide.categories.topRight());
+            this.scrollFrame.setPosition(new Point(
+                ide.categories.width(),
+                ide.categories.top()
+            ));
             this.scrollFrame.setExtent(new Point(
                 this.width() - this.scrollFrame.left(),
                 this.height()
