@@ -111,6 +111,7 @@ MobileIdeMorph.prototype.init = function (isAutoFill) {
     this.tabBar = null;
     this.spritesPanel = null;
     this.stagePanel = null;
+    this.spriteIndicator = null;
 };
 
 // MobileIdeMorph construction
@@ -122,12 +123,13 @@ MobileIdeMorph.prototype.buildPanes = function () {
     this.createPalette();
     this.createPaletteDrawer();
     this.createStage();
+    this.createStagePanel();
     this.createSpriteBar();
-    this.createSpriteEditor();
     this.createCorralBar();
     this.createCorral();
     this.createSpritesPanel();
-    this.createStagePanel();
+    this.createSpriteEditor();
+    this.createSpriteIndicator();
 };
 
 MobileIdeMorph.prototype.createControlBar = function () {
@@ -702,29 +704,83 @@ MobileIdeMorph.prototype.refreshPauseButton = function () {
     }
 };
 
+MobileIdeMorph.prototype.createSpriteIndicator = function () {
+    var padding = 5,
+        myself = this;
+
+    this.spriteIndicator = new Morph();
+    this.spriteIndicator.color = this.frameColor;
+    this.spriteIndicator.setHeight(20); // height is fixed
+    this.add(this.spriteIndicator);
+
+    this.spriteIndicator.fixLayout = function () {
+        this.updateLabel();
+    };
+
+    this.spriteIndicator.updateLabel = function () {
+        if (this.label) {
+            this.label.destroy();
+        }
+
+        this.label = new StringMorph(
+            myself.currentSprite.name,
+            14,
+            'sans-serif',
+            true,
+            false,
+            false,
+            MorphicPreferences.isFlat ? null : new Point(2, 1),
+            myself.frameColor.darker(myself.buttonContrast)
+        );
+        this.label.color = myself.buttonLabelColor;
+        this.label.drawNew();
+        this.add(this.label);
+        this.label.setCenter(this.center());
+        this.label.setLeft(this.left() + 5);
+    };
+};
+
 // MobileIdeMorph layout
 
 MobileIdeMorph.prototype.fixLayout = function (situation) {
     // situation is a string, i.e.
     // 'selectSprite' or 'refreshPalette' or 'tabEditor'
-    var padding = this.padding;
+    var padding = this.padding,
+        spriteEditorTop;
 
     Morph.prototype.trackChanges = false;
 
     if (situation !== 'refreshPalette') {
         // controlBar
-        this.controlBar.setWidth(this.right());
+        this.controlBar.setPosition(this.position());
+        this.controlBar.setWidth(this.width());
         this.controlBar.fixLayout();
 
         // tabBar
+        this.tabBar.setLeft(this.left());
         this.tabBar.setBottom(this.bottom());
-        this.tabBar.setWidth(this.right());
+        this.tabBar.setWidth(this.width());
         this.tabBar.fixLayout();
+
+        // spriteIndicator
+        if (contains(['scripts', 'costumes', 'sounds'], this.currentTab)) {
+            this.spriteIndicator.show();
+            this.spriteIndicator.setPosition(new Point(
+                this.left(),
+                this.controlBar.bottom() + padding
+            ));
+            this.spriteIndicator.setWidth(this.width());
+            this.spriteIndicator.fixLayout();
+            spriteEditorTop = this.spriteIndicator.bottom() + padding;
+        } else {
+            this.spriteIndicator.hide();
+            spriteEditorTop = this.controlBar.bottom() + padding;
+        }
 
         // spriteEditor
         this.spriteEditor.setPosition(new Point(
             this.left(),
-            this.controlBar.bottom() + padding
+            spriteEditorTop
         ));
         this.spriteEditor.setExtent(new Point(
             this.width(),
