@@ -409,12 +409,19 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
         ide = this;
 
     if (this.spriteEditor) {
-        this.spriteEditor.destroy();
+        if (
+            this.spriteEditor === this.spritesPanel ||
+            this.spriteEditor === this.stagePanel
+        ) {
+            this.spriteEditor.hide();
+        } else {
+            this.spriteEditor.destroy();
+        }
     }
 
     if (this.currentTab === 'sprites') {
         this.spriteEditor = this.spritesPanel;
-        this.addChild(this.spriteEditor);
+        this.spriteEditor.show();
     } else if (this.currentTab === 'scripts') {
         scripts.isDraggable = false;
         scripts.color = this.groupColor;
@@ -483,7 +490,7 @@ MobileIdeMorph.prototype.createSpriteEditor = function () {
         this.spriteEditor.contents.acceptsDrops = false;
     } else if (this.currentTab === 'stage') {
         this.spriteEditor = this.stagePanel;
-        this.addChild(this.spriteEditor);
+        this.spriteEditor.show();
     } else {
         this.spriteEditor = new Morph();
         this.spriteEditor.color = this.groupColor;
@@ -508,12 +515,13 @@ MobileIdeMorph.prototype.createSpritesPanel = function () {
 
     this.spritesPanel = new Morph();
     this.spritesPanel.color = this.groupColor;
-    // panel is not added until needed but pretends to exist in world
-    this.spritesPanel.parent = this;
+    this.addChild(this.spritesPanel);
 
     this.spritesPanel.add(this.spriteBar);
     this.spritesPanel.add(this.corralBar);
     this.spritesPanel.add(this.corral);
+
+    this.spritesPanel.hide();
 
     this.spritesPanel.fixLayout = function (situation) {
         ide.spriteBar.setTop(this.top());
@@ -549,8 +557,7 @@ MobileIdeMorph.prototype.createStagePanel = function () {
 
     this.stagePanel = new Morph();
     this.stagePanel.color = this.groupColor;
-    // panel is not added until needed but pretends to exist in world
-    this.stagePanel.parent = this;
+    this.addChild(this.stagePanel);
 
     // stopButton
     button = new ToggleButtonMorph(
@@ -665,6 +672,8 @@ MobileIdeMorph.prototype.createStagePanel = function () {
     this.stagePanel.startButton = startButton;
 
     this.stagePanel.add(this.stage);
+
+    this.stagePanel.hide();
 
     this.stagePanel.fixLayout = function () {
         myself.stage.setScale(myself.stageRatio);
